@@ -85,17 +85,26 @@ def users():
     return response
 
 
-@app.route('/reviews/<int:id>', methods=['GET', 'DELETE'])
+@app.route('/reviews/<int:id>', methods=['GET', 'DELETE', 'PATCH'])
 def review_by_id(id):
     review = Review.query.get(id)
 
     if request.method == 'GET':
         return review.to_dict()
-    else:
+    elif request.method == 'DELETE':
         db.session.delete(review)
         db.session.commit()
 
         return {'delete_successful': True, 'message': 'Review deleted'}
+    elif request.method == 'PATCH':
+        for attr in request.form:
+            setattr(review, attr, request.form.get(attr))
+
+        db.session.add(review)
+        db.session.commit()
+
+        review_dict = review.to_dict()
+        return review_dict
 
 
 if __name__ == '__main__':
